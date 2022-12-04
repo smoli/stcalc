@@ -26,15 +26,15 @@ impl fmt::Display for Symbol {
     }
 }
 
-struct Calc {
+struct Lexer {
     input: String,
     scanner: usize
 }
 
-impl Calc {
+impl Lexer {
 
-    fn new(input: &str) -> Calc {
-        Calc { input: String::from(input), scanner: 0}
+    fn new(input: &str) -> Lexer {
+        Lexer { input: String::from(input), scanner: 0}
     }
 
     fn take_next(&mut self) -> Option<char> {
@@ -121,7 +121,7 @@ impl Calc {
 }
 
 
-impl Iterator for Calc {
+impl Iterator for Lexer {
 
     type Item = Symbol;
 
@@ -142,58 +142,58 @@ mod tests {
 
     #[test]
     fn parses_a_number() {
-        let mut calc = Calc::new("12");
-        let result = calc.next_symbol();
+        let mut lexer = Lexer::new("12");
+        let result = lexer.next_symbol();
 
         assert!(matches!(result, Symbol::Number(12)));
     }
 
     #[test]
     fn ignores_white_space() {
-        let mut calc = Calc::new("   12   14");
-        let mut result = calc.next_symbol();
+        let mut lexer = Lexer::new("   12   14");
+        let mut result = lexer.next_symbol();
         assert!(matches!(result, Symbol::Number(12)));
 
-        result =calc.next_symbol();
+        result =lexer.next_symbol();
         assert!(matches!(result, Symbol::Number(14)));
     }
 
     #[test]
     fn reads_all_symbols() {
-        let mut calc = Calc::new("5 * (3 + 2)");
+        let mut lexer = Lexer::new("5 * (3 + 2)");
 
-        let mut result = calc.next_symbol();
+        let mut result = lexer.next_symbol();
         assert!(matches!(result, Symbol::Number(5)));
 
-        result = calc.next_symbol();
+        result = lexer.next_symbol();
         assert!(matches!(result, Symbol::BinaryOperator('*')));
 
-        result = calc.next_symbol();
+        result = lexer.next_symbol();
         assert!(matches!(result, Symbol::OpenParenthesis));
 
-        result = calc.next_symbol();
+        result = lexer.next_symbol();
         assert!(matches!(result, Symbol::Number(3)));
 
-        result = calc.next_symbol();
+        result = lexer.next_symbol();
         assert!(matches!(result, Symbol::BinaryOperator('+')));
 
-        result = calc.next_symbol();
+        result = lexer.next_symbol();
         assert!(matches!(result, Symbol::Number(2)));
 
-        result = calc.next_symbol();
+        result = lexer.next_symbol();
         assert!(matches!(result, Symbol::ClosedParenthesis));
 
-        result = calc.next_symbol();
+        result = lexer.next_symbol();
         assert!(matches!(result, Symbol::End));
     }
 }
 
 #[test]
 fn can_be_used_as_iterator() {
-    let calc = Calc::new("5 * (3 + 2)");
+    let lexer = Lexer::new("5 * (3 + 2)");
 
     let mut count = 0;
-    for _ in calc {
+    for _ in lexer {
         count += 1;
     }
 
