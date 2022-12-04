@@ -34,6 +34,7 @@ impl Lexer {
     fn take_numbers(&mut self, first: char) -> Symbol {
         let mut result = String::from(first);
 
+        let mut dec = false;
         loop {
             if self.exhausted() {
                 break;
@@ -43,6 +44,15 @@ impl Lexer {
                 None => break,
                 Some(c) =>
                     match c {
+                        '.' => {
+                            if dec {
+                                panic!("Unexcpected character . at {}", self.scanner);
+                            } else {
+                                dec = true;
+                                result.push(c);
+                            }
+                        }
+
                         '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'
                         => result.push(c),
 
@@ -68,7 +78,7 @@ impl Lexer {
 
                 Some(c) =>
                     match c {
-                        '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'
+                        '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '.'
                         => return self.take_numbers(c),
 
                         '*' | '+' | '-' | '/' | '^'
@@ -121,17 +131,38 @@ mod tests {
         let mut lexer = Lexer::new("12");
         let result = lexer.next_symbol();
 
-        assert!(matches!(result, Symbol::Number(12.0)));
+        assert!(matches!(result, Symbol::Number(_)));
+        if let Symbol::Number(c) = result {
+            assert_eq!(c, 12.0);
+        }
+    }
+
+    #[test]
+    fn parses_a_decimal_number() {
+        let mut lexer = Lexer::new("12.5");
+        let result = lexer.next_symbol();
+
+        assert!(matches!(result, Symbol::Number(_)));
+        if let Symbol::Number(c) = result {
+            assert_eq!(c, 12.5);
+        }
     }
 
     #[test]
     fn ignores_white_space() {
         let mut lexer = Lexer::new("   12   14");
         let mut result = lexer.next_symbol();
-        assert!(matches!(result, Symbol::Number(12.0)));
+
+        assert!(matches!(result, Symbol::Number(_)));
+        if let Symbol::Number(c) = result {
+            assert_eq!(c, 12.0);
+        }
 
         result =lexer.next_symbol();
-        assert!(matches!(result, Symbol::Number(14.0)));
+        assert!(matches!(result, Symbol::Number(_)));
+        if let Symbol::Number(c) = result {
+            assert_eq!(c, 14.0);
+        }
     }
 
     #[test]
@@ -139,7 +170,10 @@ mod tests {
         let mut lexer = Lexer::new("5 * (3 + 2)");
 
         let mut result = lexer.next_symbol();
-        assert!(matches!(result, Symbol::Number(5.0)));
+        assert!(matches!(result, Symbol::Number(_)));
+        if let Symbol::Number(c) = result {
+            assert_eq!(c, 5.0);
+        }
 
         result = lexer.next_symbol();
         assert!(matches!(result, Symbol::BinaryOperator('*')));
@@ -148,13 +182,19 @@ mod tests {
         assert!(matches!(result, Symbol::OpenParenthesis));
 
         result = lexer.next_symbol();
-        assert!(matches!(result, Symbol::Number(3.0)));
+        assert!(matches!(result, Symbol::Number(_)));
+        if let Symbol::Number(c) = result {
+            assert_eq!(c, 3.0);
+        }
 
         result = lexer.next_symbol();
         assert!(matches!(result, Symbol::BinaryOperator('+')));
 
         result = lexer.next_symbol();
-        assert!(matches!(result, Symbol::Number(2.0)));
+        assert!(matches!(result, Symbol::Number(_)));
+        if let Symbol::Number(c) = result {
+            assert_eq!(c, 2.0);
+        }
 
         result = lexer.next_symbol();
         assert!(matches!(result, Symbol::ClosedParenthesis));

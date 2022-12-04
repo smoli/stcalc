@@ -154,4 +154,13 @@ mod test {
 
         assert_eq!(result, 2.5);
     }
+
+    #[test]
+    fn works_with_decimals() {
+        let parser = Parser::new("2.5 + 3.1415");
+        let result = parser.evaluate();
+
+        assert_eq!(result, 2.5 + 3.1415);
+    }
+
 }
