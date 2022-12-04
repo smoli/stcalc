@@ -1,5 +1,9 @@
 use std::fmt;
 
+/*
+        expression =
+ */
+
 enum Symbol {
     Number(u32),
     BinaryOperator(char),
@@ -116,6 +120,22 @@ impl Calc {
     }
 }
 
+
+impl Iterator for Calc {
+
+    type Item = Symbol;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let r = self.next_symbol();
+
+        return match r {
+            Symbol::End => None,
+            _ => Some(r)
+        }
+    }
+
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -166,7 +186,18 @@ mod tests {
         result = calc.next_symbol();
         assert!(matches!(result, Symbol::End));
     }
+}
 
+#[test]
+fn can_be_used_as_iterator() {
+    let calc = Calc::new("5 * (3 + 2)");
+
+    let mut count = 0;
+    for _ in calc {
+        count += 1;
+    }
+
+    assert_eq!(count, 7);
 }
 
 fn main() {
