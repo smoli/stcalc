@@ -143,35 +143,27 @@ mod tests {
         let mut calc = Calc::new("5 * (3 + 2)");
 
         let mut result = calc.next_symbol();
-        println!("{}", result);
         assert!(matches!(result, Symbol::Number(5)));
 
         result = calc.next_symbol();
-        println!("{}", result);
         assert!(matches!(result, Symbol::BinaryOperator('*')));
 
         result = calc.next_symbol();
-        println!("{}", result);
         assert!(matches!(result, Symbol::OpenParenthesis));
 
         result = calc.next_symbol();
-        println!("{}", result);
         assert!(matches!(result, Symbol::Number(3)));
 
         result = calc.next_symbol();
-        println!("{}", result);
         assert!(matches!(result, Symbol::BinaryOperator('+')));
 
         result = calc.next_symbol();
-        println!("{}", result);
         assert!(matches!(result, Symbol::Number(2)));
 
         result = calc.next_symbol();
-        println!("{}", result);
         assert!(matches!(result, Symbol::ClosedParenthesis));
 
         result = calc.next_symbol();
-        println!("{}", result);
         assert!(matches!(result, Symbol::End));
     }
 
