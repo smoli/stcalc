@@ -23,6 +23,7 @@ impl Lexer {
         self.current()
     }
 
+
     fn exhausted(&self) -> bool {
         self.scanner >= self.input.len()
     }

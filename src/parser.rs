@@ -186,4 +186,13 @@ mod test {
         // assert_eq!(Parser::eval("12 + 2^4"), 12.0 + 2f64.powf(4.0));
     }
 
+    #[test]
+    fn works_with_negative_numbers() {
+        assert_eq!(Parser::eval("-12 + 2"), -10.0);
+        assert_eq!(Parser::eval("2-2"), 0.0);
+        assert_eq!(Parser::eval("2--2"), 4.0);
+        assert_eq!(Parser::eval("2*-2"), -4.0);
+        assert_eq!(Parser::eval("2^-2"), 2f64.powf(-2.0));
+    }
+
 }
