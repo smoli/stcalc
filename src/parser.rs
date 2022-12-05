@@ -10,6 +10,11 @@ impl Parser {
         Parser { input: String::from(input) }
     }
 
+    pub fn eval(input: &str) -> f64 {
+        let p = Parser::new(input);
+        p.evaluate()
+    }
+
     pub fn evaluate(&self) -> f64 {
         let infix = self.transform();
         let mut stack: Vec<f64> = vec![];
@@ -85,6 +90,8 @@ impl Parser {
 
                                 if p1 <= p2 {
                                     out.push(op.pop().unwrap());
+                                } else {
+                                    break;
                                 }
                             }
 
@@ -118,6 +125,8 @@ impl Parser {
                 _ => {}
             }
         }
+
+        op.reverse();
 
         for s in op {
             out.push(s);
@@ -161,6 +170,20 @@ mod test {
         let result = parser.evaluate();
 
         assert_eq!(result, 2.5 + 3.1415);
+    }
+
+    #[test]
+    fn works_with_exponents() {
+        let parser = Parser::new("12 + 2^2");
+        let result = parser.evaluate();
+
+        assert_eq!(result, 16f64);
+    }
+
+    #[test]
+    fn has_a_static_convenience_method() {
+        assert_eq!(Parser::eval("1 + 2"), 3f64);
+        // assert_eq!(Parser::eval("12 + 2^4"), 12.0 + 2f64.powf(4.0));
     }
 
 }
