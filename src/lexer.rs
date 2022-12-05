@@ -4,13 +4,13 @@ pub mod symbol;
 
 pub struct Lexer {
     input: String,
-    scanner: usize
+    scanner: usize,
+    prev_was_number: bool
 }
 
 impl Lexer {
-
     pub fn new(input: &str) -> Lexer {
-        Lexer { input: String::from(input), scanner: 0}
+        Lexer { input: String::from(input), scanner: 0, prev_was_number: false }
     }
 
     fn take_next(&mut self) -> Option<char> {
@@ -31,7 +31,7 @@ impl Lexer {
         self.input.chars().nth(self.scanner)
     }
 
-    fn take_numbers(&mut self, first: char) -> Symbol {
+    fn take_numbers(&mut self, first: char, negative: bool) -> Symbol {
         let mut result = String::from(first);
 
         let mut dec = false;
@@ -57,13 +57,15 @@ impl Lexer {
                         => result.push(c),
 
                         _ => break
-
                     }
-
-
             }
         }
-        Symbol::Number(result.parse().unwrap())
+
+        if negative {
+            Symbol::Number(-1f64 * result.parse::<f64>().unwrap())
+        } else {
+            Symbol::Number(result.parse().unwrap())
+        }
     }
 
     pub fn next_symbol(&mut self) -> Symbol {
@@ -79,23 +81,52 @@ impl Lexer {
                 Some(c) =>
                     match c {
                         '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '.'
-                        => return self.take_numbers(c),
+                        => {
+                            self.prev_was_number = true;
+                            return self.take_numbers(c, false);
+                        }
 
-                        '*' | '+' | '-' | '/' | '^'
+                        '-'
                         => {
                             self.take_next();
-                            return Symbol::BinaryOperator(c)
-                        },
+                            if self.prev_was_number == true {
+                                self.prev_was_number = false;
+                                return Symbol::BinaryOperator(c);
+                            }
+
+                            let cu = self.current().unwrap();
+                            match cu {
+                                '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'
+                                => {
+                                    self.prev_was_number = true;
+                                    return self.take_numbers(cu, true);
+                                }
+
+                                _ => {
+                                    self.prev_was_number = false;
+                                    return Symbol::BinaryOperator(c);
+                                }
+                            }
+                        }
+
+                        '*' | '+' | '/' | '^'
+                        => {
+                            self.take_next();
+                            self.prev_was_number = false;
+                            return Symbol::BinaryOperator(c);
+                        }
 
                         '(' => {
                             self.take_next();
-                            return Symbol::OpenParenthesis
-                        },
+                            self.prev_was_number = false;
+                            return Symbol::OpenParenthesis;
+                        }
 
                         ')' => {
                             self.take_next();
-                            return Symbol::ClosedParenthesis
-                        },
+                            self.prev_was_number = false;
+                            return Symbol::ClosedParenthesis;
+                        }
 
                         _ => if self.exhausted() { return Symbol::End; } else { next = self.take_next() }
                     }
@@ -108,7 +139,6 @@ impl Lexer {
 
 
 impl Iterator for Lexer {
-
     type Item = Symbol;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -117,7 +147,7 @@ impl Iterator for Lexer {
         return match r {
             Symbol::End => None,
             _ => Some(r)
-        }
+        };
     }
 }
 
@@ -158,7 +188,7 @@ mod tests {
             assert_eq!(c, 12.0);
         }
 
-        result =lexer.next_symbol();
+        result = lexer.next_symbol();
         assert!(matches!(result, Symbol::Number(_)));
         if let Symbol::Number(c) = result {
             assert_eq!(c, 14.0);
@@ -202,16 +232,64 @@ mod tests {
         result = lexer.next_symbol();
         assert!(matches!(result, Symbol::End));
     }
-}
 
-#[test]
-fn can_be_used_as_iterator() {
-    let lexer = Lexer::new("5 * (3 + 2)");
+    #[test]
+    fn can_be_used_as_iterator() {
+        let lexer = Lexer::new("5 * (3 + 2)");
 
-    let mut count = 0;
-    for _ in lexer {
-        count += 1;
+        let mut count = 0;
+        for _ in lexer {
+            count += 1;
+        }
+
+        assert_eq!(count, 7);
     }
 
-    assert_eq!(count, 7);
+    #[test]
+    fn can_parse_negative_numbers() {
+        let mut lexer = Lexer::new("-12");
+        let result = lexer.next_symbol();
+        assert!(matches!(result, Symbol::Number(_)));
+        if let Symbol::Number(c) = result {
+            assert_eq!(c, -12.0);
+        }
+    }
+
+    #[test]
+    fn can_parse_negative_numbers_in_expression() {
+        let mut lexer = Lexer::new("14 + -23.2");
+        let mut result = lexer.next_symbol();
+        assert!(matches!(result, Symbol::Number(_)));
+        if let Symbol::Number(c) = result {
+            assert_eq!(c, 14.0);
+        }
+
+        result = lexer.next_symbol();
+        assert!(matches!(result, Symbol::BinaryOperator('+')));
+
+        result = lexer.next_symbol();
+        assert!(matches!(result, Symbol::Number(_)));
+        if let Symbol::Number(c) = result {
+            assert_eq!(c, -23.2);
+        }
+    }
+
+    #[test]
+    fn does_not_confuse_minus_operation_with_negative_declination() {
+        let mut lexer = Lexer::new("14-23.2");
+        let mut result = lexer.next_symbol();
+        assert!(matches!(result, Symbol::Number(_)));
+        if let Symbol::Number(c) = result {
+            assert_eq!(c, 14.0);
+        }
+
+        result = lexer.next_symbol();
+        assert!(matches!(result, Symbol::BinaryOperator('-')));
+
+        result = lexer.next_symbol();
+        assert!(matches!(result, Symbol::Number(_)));
+        if let Symbol::Number(c) = result {
+            assert_eq!(c, 23.2);
+        }
+    }
 }
