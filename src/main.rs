@@ -1,14 +1,27 @@
-use lexer::Lexer;
+use std::env;
+use std::ops::Add;
+use crate::parser::Parser;
+
 mod lexer;
 mod parser;
 
 
 fn main() {
 
-    let l = Lexer::new("23");
+    let args:Vec<String> = env::args().collect();
+    let mut expr: String = String::from("");
 
-    for s in l {
-        println!("{s}");
+
+    for (i, a) in args.into_iter().enumerate() {
+        if i == 0 {
+            continue;
+        }
+
+        expr = expr.add(" ");
+        expr = expr.add(a.as_str());
     }
+
+    println!("{}", Parser::eval(expr.as_str()));
+    // println!("{}", expr);
 
 }
