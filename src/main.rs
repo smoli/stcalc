@@ -1,27 +1,42 @@
 use std::env;
 use std::ops::Add;
 use crate::parser::Parser;
-
+use clap::Parser as Clapper;
 mod lexer;
 mod parser;
+
+#[derive(Clapper, Debug)]
+#[command(author, version, about, long_about = None)]
+struct Args {
+    /// Expression to evaluate
+    #[arg(short, long)]
+    expression: String,
+
+    /// Show only input
+    #[arg(short, long, action)]
+    input: bool,
+
+    /// Show as equation
+    #[arg(short= 'q', long, action)]
+    equation: bool,
+
+
+}
 
 
 fn main() {
 
-    let args:Vec<String> = env::args().collect();
-    let mut expr: String = String::from("");
+    let args = Args::parse();
 
+    if args.input {
+        println!("{}", args.expression);
+    } else {
+        let result = Parser::eval(args.expression.as_str());
 
-    for (i, a) in args.into_iter().enumerate() {
-        if i == 0 {
-            continue;
+        if args.equation {
+            println!("{} = {}", args.expression, result)
+        } else {
+            println!("{}", result)
         }
-
-        expr = expr.add(" ");
-        expr = expr.add(a.as_str());
     }
-
-    println!("{}", Parser::eval(expr.as_str()));
-    // println!("{} = {}", expr, Parser::eval(expr.as_str()));
-    // println!("{}", expr);
 }
