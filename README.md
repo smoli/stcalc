@@ -19,6 +19,19 @@ Options:
 
 ```
 
+## Features
+
+It can use decimal numbers, positive and negative. Computations are internally done as a 64bit floating point number.
+
+| Operator | Effekt |
+|----------|--------|
+| + | Addition |
+| - | Subtraction |
+| * | Multiplication |
+| / | Division |
+| ** | power of |
+| ^ | power of |
+
 ## Espanso Integration
 
 In day to day use I use it within [espanso](https://espanso.org/). E.g. add this to your `.yaml`:
