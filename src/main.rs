@@ -1,4 +1,3 @@
-use std::env;
 use std::ops::Add;
 use crate::parser::Parser;
 use clap::Parser as Clapper;
@@ -6,35 +5,39 @@ mod lexer;
 mod parser;
 
 #[derive(Clapper, Debug)]
-#[command(author, version, about, long_about = None)]
+#[clap(author="Stephan Smola", version="0.1", about ="Unnecessary expression evaluator. It's one of many but this is mine.", long_about = None)]
 struct Args {
-    /// Expression to evaluate
-    #[arg(short, long)]
-    expression: String,
-
     /// Show only input
-    #[arg(short, long, action)]
+    #[clap(short, long, action)]
     input: bool,
 
     /// Show as equation
-    #[arg(short= 'q', long, action)]
+    #[clap(short= 'q', long, action)]
     equation: bool,
 
+    expression: Vec<String>,
 
 }
 
 
 fn main() {
-
     let args = Args::parse();
 
+    let mut expression = String::from("");
+    let mut sep = "";
+    for e in args.expression {
+        expression = expression.add(sep);
+        expression = expression.add(e.as_str());
+        sep = " ";
+    }
+
     if args.input {
-        println!("{}", args.expression);
+        println!("{}", expression);
     } else {
-        let result = Parser::eval(args.expression.as_str());
+        let result = Parser::eval(expression.as_str());
 
         if args.equation {
-            println!("{} = {}", args.expression, result)
+            println!("{} = {}", expression, result)
         } else {
             println!("{}", result)
         }

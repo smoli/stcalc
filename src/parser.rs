@@ -41,10 +41,6 @@ impl Parser {
                         Operation::Addition => stack.push(b + a),
 
                         Operation::Subtraction => stack.push(b - a),
-
-                        _ => {
-                            panic!("Unknown operator {o}")
-                        }
                     }
                 }
 
@@ -64,7 +60,6 @@ impl Parser {
             Operation::Pow => 3,
             Operation::Multiplication | Operation::Division => 2,
             Operation::Addition | Operation::Subtraction => 1,
-            _ => 0
         };
     }
 
