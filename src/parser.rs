@@ -1,5 +1,5 @@
 use crate::lexer::Lexer;
-use crate::lexer::symbol::Symbol;
+use crate::lexer::symbol::{Operation, Symbol};
 
 pub struct Parser {
     input: String,
@@ -32,15 +32,15 @@ impl Parser {
                     let b = stack.pop().unwrap();
 
                     match o {
-                        '^' => stack.push(b.powf(a)),
+                        Operation::Pow => stack.push(b.powf(a)),
 
-                        '*' => stack.push(a * b),
+                        Operation::Multiplication => stack.push(a * b),
 
-                        '/' => stack.push(b / a),
+                        Operation::Division => stack.push(b / a),
 
-                        '+' => stack.push(b + a),
+                        Operation::Addition => stack.push(b + a),
 
-                        '-' => stack.push(b - a),
+                        Operation::Subtraction => stack.push(b - a),
 
                         _ => {
                             panic!("Unknown operator {o}")
@@ -59,11 +59,11 @@ impl Parser {
         return stack.pop().unwrap();
     }
 
-    pub fn get_precedence(op: &char) -> u8 {
+    pub fn get_precedence(op: &Operation) -> u8 {
         return match op {
-            '^' => 3,
-            '*' | '/' => 2,
-            '+' | '-' => 1,
+            Operation::Pow => 3,
+            Operation::Multiplication | Operation::Division => 2,
+            Operation::Addition | Operation::Subtraction => 1,
             _ => 0
         };
     }
@@ -99,7 +99,7 @@ impl Parser {
                         }
                     }
 
-                    op.push(s);
+                    op.push(Symbol::BinaryOperator(o1));
                 }
 
                 Symbol::OpenParenthesis => op.push(s),
@@ -193,6 +193,11 @@ mod test {
         assert_eq!(Parser::eval("2--2"), 4.0);
         assert_eq!(Parser::eval("2*-2"), -4.0);
         assert_eq!(Parser::eval("2^-2"), 2f64.powf(-2.0));
+    }
+
+    #[test]
+    fn pow_works() {
+        assert_eq!(Parser::eval("23 ^ 2"), 23.0 * 23.0);
     }
 
 }

@@ -1,8 +1,28 @@
 use std::fmt;
 
+pub enum Operation {
+    Addition,
+    Subtraction,
+    Multiplication,
+    Division,
+    Pow,
+}
+
+impl fmt::Display for Operation {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match &self {
+            Operation::Addition => write!(f, "+"),
+            Operation::Subtraction => write!(f, "-"),
+            Operation::Multiplication => write!(f, "*"),
+            Operation::Division => write!(f, "/"),
+            Operation::Pow => write!(f, "**")
+        }
+    }
+}
+
 pub enum Symbol {
     Number(f64),
-    BinaryOperator(char),
+    BinaryOperator(Operation),
     OpenParenthesis,
     ClosedParenthesis,
     End,

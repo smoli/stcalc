@@ -1,4 +1,6 @@
 use symbol::Symbol;
+use crate::lexer::symbol::Operation;
+use crate::lexer::symbol::Operation::{Addition, Division, Multiplication, Pow, Subtraction};
 
 pub mod symbol;
 
@@ -92,7 +94,7 @@ impl Lexer {
                             self.take_next();
                             if self.prev_was_number == true {
                                 self.prev_was_number = false;
-                                return Symbol::BinaryOperator(c);
+                                return Symbol::BinaryOperator(Operation::Subtraction);
                             }
 
                             let cu = self.current().unwrap();
@@ -105,7 +107,7 @@ impl Lexer {
 
                                 _ => {
                                     self.prev_was_number = false;
-                                    return Symbol::BinaryOperator(c);
+                                    return Symbol::BinaryOperator(Subtraction);
                                 }
                             }
                         }
@@ -114,7 +116,25 @@ impl Lexer {
                         => {
                             self.take_next();
                             self.prev_was_number = false;
-                            return Symbol::BinaryOperator(c);
+                            match c {
+                                '*' => {
+                                    if self.exhausted() {
+                                        return Symbol::BinaryOperator(Multiplication)
+                                    }
+                                    match self.current().unwrap() {
+                                        '*' => {
+                                            self.take_next();
+                                            return Symbol::BinaryOperator(Pow)
+                                        }
+                                        _ => return Symbol::BinaryOperator(Multiplication)
+
+                                    }
+                                },
+                                '+' => return Symbol::BinaryOperator(Addition),
+                                '/' => return Symbol::BinaryOperator(Division),
+                                '^' => return Symbol::BinaryOperator(Pow),
+                                _ => {}
+                            }
                         }
 
                         '(' => {
@@ -207,7 +227,7 @@ mod tests {
         }
 
         result = lexer.next_symbol();
-        assert!(matches!(result, Symbol::BinaryOperator('*')));
+        assert!(matches!(result, Symbol::BinaryOperator(Multiplication)));
 
         result = lexer.next_symbol();
         assert!(matches!(result, Symbol::OpenParenthesis));
@@ -219,7 +239,7 @@ mod tests {
         }
 
         result = lexer.next_symbol();
-        assert!(matches!(result, Symbol::BinaryOperator('+')));
+        assert!(matches!(result, Symbol::BinaryOperator(Addition)));
 
         result = lexer.next_symbol();
         assert!(matches!(result, Symbol::Number(_)));
@@ -266,7 +286,7 @@ mod tests {
         }
 
         result = lexer.next_symbol();
-        assert!(matches!(result, Symbol::BinaryOperator('+')));
+        assert!(matches!(result, Symbol::BinaryOperator(Addition)));
 
         result = lexer.next_symbol();
         assert!(matches!(result, Symbol::Number(_)));
@@ -285,7 +305,7 @@ mod tests {
         }
 
         result = lexer.next_symbol();
-        assert!(matches!(result, Symbol::BinaryOperator('-')));
+        assert!(matches!(result, Symbol::BinaryOperator(Subtraction)));
 
         result = lexer.next_symbol();
         assert!(matches!(result, Symbol::Number(_)));

@@ -22,6 +22,6 @@ fn main() {
     }
 
     println!("{}", Parser::eval(expr.as_str()));
+    // println!("{} = {}", expr, Parser::eval(expr.as_str()));
     // println!("{}", expr);
-
 }
