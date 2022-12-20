@@ -1,3 +1,4 @@
+use clap::builder::Str;
 use crate::lexer::Lexer;
 use crate::lexer::symbol::{Operation, Symbol};
 
@@ -5,17 +6,21 @@ pub struct Parser {
     input: String,
 }
 
+pub enum ParserError {
+    Error(String)
+}
+
 impl Parser {
     pub fn new(input: &str) -> Parser {
         Parser { input: String::from(input) }
     }
 
-    pub fn eval(input: &str) -> f64 {
+    pub fn eval(input: &str) -> Result<f64, ParserError> {
         let p = Parser::new(input);
         p.evaluate()
     }
 
-    pub fn evaluate(&self) -> f64 {
+    pub fn evaluate(&self) -> Result<f64, ParserError> {
         let infix = self.transform();
         let mut stack: Vec<f64> = vec![];
 
@@ -25,7 +30,8 @@ impl Parser {
 
                 Symbol::BinaryOperator(o) => {
                     if stack.len() < 2 {
-                        panic!("Not enough arguments for operation");
+                        return Result::Err(ParserError::Error("Not enough operands for operation".to_string()));
+                        // panic!("Not enough arguments for operation");
                     }
 
                     let a = stack.pop().unwrap();
@@ -49,10 +55,10 @@ impl Parser {
         }
 
         if stack.len() != 1 {
-            panic!("Unexpected stack size {}", stack.len());
+            return Result::Err(ParserError::Error("Unexpected Stack Size".to_string()));
         }
 
-        return stack.pop().unwrap();
+        return Ok(stack.pop().unwrap());
     }
 
     pub fn get_precedence(op: &Operation) -> u8 {

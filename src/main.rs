@@ -1,6 +1,6 @@
 use std::io::stdin;
 use std::ops::Add;
-use crate::parser::Parser;
+use crate::parser::{Parser, ParserError};
 use clap::Parser as Clapper;
 
 mod lexer;
@@ -33,8 +33,21 @@ fn repl(firstExpression: String) {
             Err(_) => return,
 
             Ok(_) => {
+                if i.trim().len() == 0 {
+                    continue
+                }
                 let r = Parser::eval(i.as_str());
-                println!("{}", r);
+                match r {
+                    Err(e) => {
+                        match e {
+                            ParserError::Error(e) => println!("ERROR: {}", e)
+                        }
+                    },
+
+                    Ok(v) => {
+                        println!("{}", v);
+                    }
+                }
             }
         }
 
@@ -68,10 +81,23 @@ fn main() {
     } else {
         let result = Parser::eval(expression.as_str());
 
-        if args.equation {
-            println!("{} = {}", expression, result)
-        } else {
-            println!("{}", result)
+        match result {
+            Err(e) => {
+                match e {
+                    ParserError::Error(e) => {
+                        println!("ERROR: {e}");
+                    }
+                }
+            },
+
+            Ok(v) => {
+                    if args.equation {
+                        println!("{} = {}", expression, v)
+                    } else {
+                        println!("{}", v)
+                    }
+
+            }
         }
     }
 }
