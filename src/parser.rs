@@ -1,4 +1,3 @@
-use clap::builder::Str;
 use crate::lexer::Lexer;
 use crate::lexer::symbol::{Operation, Symbol};
 

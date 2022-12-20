@@ -1,4 +1,4 @@
-use std::io::stdin;
+use std::io::{stdin, stdout, Write};
 use std::ops::Add;
 use crate::parser::{Parser, ParserError};
 use clap::Parser as Clapper;
@@ -26,9 +26,11 @@ struct Args {
 }
 
 
-fn repl(firstExpression: String) {
+fn repl() {
     loop {
         let mut i = String::new();
+        print!("> ");
+        let _ = stdout().flush();
         match stdin().read_line(&mut i) {
             Err(_) => return,
 
@@ -71,7 +73,7 @@ fn main() {
     }
 
     if args.repl {
-        repl(expression);
+        repl();
         return;
     }
 
