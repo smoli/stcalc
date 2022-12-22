@@ -12,6 +12,7 @@ Arguments:
   [EXPRESSION]...
 
 Options:
+  -r, --repl      REPL mode
   -i, --input     Show only input
   -q, --equation  Show as equation
   -h, --help      Print help information
